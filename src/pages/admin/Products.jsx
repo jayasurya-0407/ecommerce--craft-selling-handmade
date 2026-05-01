@@ -18,7 +18,7 @@ export default function Products() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/products');
+      const res = await fetch('https://ecommerce-craft-selling-handmade.onrender.com/api/products');
       const data = await res.json();
       setProducts(data);
     } catch (error) {
@@ -56,22 +56,21 @@ export default function Products() {
     try {
       let imagePath = formData.img || '/placeholder.png';
       
-      // Upload image if a new one was selected
+      // Convert image to Base64
       if (imageFile) {
-        const imgData = new FormData();
-        imgData.append('image', imageFile);
-        const uploadRes = await fetch('http://localhost:5000/api/admin/products/upload', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${admin.token}` },
-          body: imgData
+        const toBase64 = file => new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = error => reject(error);
         });
-        imagePath = await uploadRes.text();
+        imagePath = await toBase64(imageFile);
       }
 
       const method = editingProductId ? 'PUT' : 'POST';
       const url = editingProductId 
-        ? `http://localhost:5000/api/admin/products/${editingProductId}` 
-        : 'http://localhost:5000/api/admin/products';
+        ? `https://ecommerce-craft-selling-handmade.onrender.com/api/admin/products/${editingProductId}` 
+        : 'https://ecommerce-craft-selling-handmade.onrender.com/api/admin/products';
 
       await fetch(url, {
         method: method,
@@ -92,7 +91,7 @@ export default function Products() {
   const deleteProduct = async (id) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
     try {
-      await fetch(`http://localhost:5000/api/admin/products/${id}`, {
+      await fetch(`https://ecommerce-craft-selling-handmade.onrender.com/api/admin/products/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${admin.token}` }
       });
@@ -121,10 +120,14 @@ export default function Products() {
             </tr>
           </thead>
           <tbody>
-            {products.map(product => (
+            {products.map(product => {
+              const imgSrc = product.img.startsWith('http') || product.img.startsWith('data:') 
+                ? product.img 
+                : `https://ecommerce-craft-selling-handmade.onrender.com${product.img}`;
+              return (
               <tr key={product._id}>
                 <td>
-                  <img src={product.img.startsWith('http') ? product.img : `http://localhost:5000${product.img}`} alt={product.title} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
+                  <img src={imgSrc} alt={product.title} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
                 </td>
                 <td>{product.title}</td>
                 <td style={{textTransform: 'capitalize'}}>{product.category}</td>

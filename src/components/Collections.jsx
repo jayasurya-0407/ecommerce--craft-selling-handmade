@@ -8,7 +8,7 @@ export default function Collections() {
   useEffect(() => {
     // Attempt to fetch products from backend DB
     // If it fails (backend not running), it safely falls back to local data
-    fetch('http://localhost:5000/api/products')
+    fetch('https://ecommerce-craft-selling-handmade.onrender.com/api/products')
       .then(res => res.json())
       .then(data => {
         if (data && data.length > 0) {

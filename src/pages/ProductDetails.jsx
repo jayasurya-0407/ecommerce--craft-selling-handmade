@@ -1,19 +1,54 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useContext, useEffect } from 'react';
-import { products } from '../data/products';
+import { useContext, useEffect, useState } from 'react';
 import { CartContext } from '../context/CartContext';
+import { products as localProducts } from '../data/products';
 
 export default function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useContext(CartContext);
   
-  const product = products.find(p => p.id === parseInt(id));
+  const [product, setProduct] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  // Scroll to top when loading new product
+  // Backend URL (matching what you set in Collections.jsx)
+  const API_URL = 'https://ecommerce-craft-selling-handmade.onrender.com';
+
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Fetch products from database
+    fetch(`${API_URL}/api/products`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          // Find product by id (it might be a string from Mongo _id or a number from seed)
+          const foundProduct = data.find(p => p.id == id || p._id == id);
+          setProduct(foundProduct);
+          setRecommendations(data.filter(p => p.id != id && p._id != id).slice(0, 3));
+        } else {
+          // Fallback to local
+          fallbackToLocal();
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.log('Backend not detected, using local data fallback.');
+        fallbackToLocal();
+        setLoading(false);
+      });
   }, [id]);
+
+  const fallbackToLocal = () => {
+    const foundProduct = localProducts.find(p => p.id === parseInt(id));
+    setProduct(foundProduct);
+    setRecommendations(localProducts.filter(p => p.id !== foundProduct?.id).slice(0, 3));
+  };
+
+  if (loading) {
+    return <div className="container" style={{ padding: '8rem 2rem', textAlign: 'center' }}>Loading product...</div>;
+  }
 
   if (!product) {
     return (
@@ -24,16 +59,18 @@ export default function ProductDetails() {
     );
   }
 
-  // Recommended products (excluding current one)
-  const recommendations = products.filter(p => p.id !== product.id).slice(0, 3);
-
   const handleCustomOrderClick = () => {
-    // Navigate home and pass state to scroll to order form, or just navigate to #custom-order
     navigate('/#custom-order');
-    // Using a timeout to let react-router digest the hash and jump
     setTimeout(() => {
       document.getElementById('custom-order')?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
+  };
+
+  // Helper to format image URL if it's an uploaded file
+  const getImageUrl = (img) => {
+    if (!img) return '';
+    if (img.startsWith('http') || img.startsWith('data:')) return img;
+    return `${API_URL}${img}`;
   };
 
   return (
@@ -43,13 +80,13 @@ export default function ProductDetails() {
         
         <div className="product-layout">
           <div className="product-image-large">
-            <img src={product.img} alt={product.title} />
+            <img src={getImageUrl(product.img)} alt={product.title} />
           </div>
           <div className="product-info">
             <h1>{product.title}</h1>
             <p className="price">${product.price.toFixed(2)}</p>
             <div className="description">
-              <p>{product.fullDesc}</p>
+              <p>{product.fullDesc || product.shortDesc}</p>
             </div>
             
             <div className="product-actions">
@@ -77,10 +114,10 @@ export default function ProductDetails() {
         <h2 className="section-title">You May Also Like</h2>
         <div className="collection-grid">
           {recommendations.map(rec => (
-            <div className="product-card" key={rec.id}>
-              <Link to={`/product/${rec.id}`}>
+            <div className="product-card" key={rec._id || rec.id}>
+              <Link to={`/product/${rec.id || rec._id}`}>
                 <div className="card-img">
-                  <img src={rec.img} alt={rec.title} />
+                  <img src={getImageUrl(rec.img)} alt={rec.title} />
                 </div>
                 <h3>{rec.title}</h3>
                 <p>{rec.shortDesc}</p>

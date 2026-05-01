@@ -11,7 +11,7 @@ export default function Orders() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/admin/orders', {
+      const res = await fetch('https://ecommerce-craft-selling-handmade.onrender.com/api/admin/orders', {
         headers: { Authorization: `Bearer ${admin.token}` }
       });
       const data = await res.json();
@@ -23,7 +23,7 @@ export default function Orders() {
 
   const updateStatus = async (id, status) => {
     try {
-      await fetch(`http://localhost:5000/api/admin/orders/${id}/status`, {
+      await fetch(`https://ecommerce-craft-selling-handmade.onrender.com/api/admin/orders/${id}/status`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -40,7 +40,7 @@ export default function Orders() {
   const deleteOrder = async (id) => {
     if (!window.confirm('Are you sure you want to delete this order?')) return;
     try {
-      await fetch(`http://localhost:5000/api/admin/orders/${id}`, {
+      await fetch(`https://ecommerce-craft-selling-handmade.onrender.com/api/admin/orders/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${admin.token}` }
       });

@@ -8,7 +8,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/admin/stats', {
+        const res = await fetch('https://ecommerce-craft-selling-handmade.onrender.com/api/admin/stats', {
           headers: { Authorization: `Bearer ${admin.token}` }
         });
         const data = await res.json();
