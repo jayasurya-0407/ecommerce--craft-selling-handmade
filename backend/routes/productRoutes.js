@@ -1,21 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const path = require('path');
 const Product = require('../models/Product');
 const { protect } = require('../middleware/authMiddleware');
-
-// Multer config for local storage
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename(req, file, cb) {
-    cb(null, `${Date.now()}-${path.extname(file.originalname)}`);
-  }
-});
-
-const upload = multer({ storage });
 
 // Create a product
 router.post('/', protect, async (req, res) => {
@@ -32,10 +18,7 @@ router.post('/', protect, async (req, res) => {
   }
 });
 
-// Upload image route
-router.post('/upload', protect, upload.single('image'), (req, res) => {
-  res.send(`/${req.file.path.replace(/\\/g, '/')}`);
-});
+
 
 // Update a product
 router.put('/:id', protect, async (req, res) => {
