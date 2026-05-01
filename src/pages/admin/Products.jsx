@@ -137,7 +137,8 @@ export default function Products() {
                   <button onClick={() => deleteProduct(product._id)} className="btn-danger-sm">Delete</button>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
